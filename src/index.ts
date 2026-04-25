@@ -1,8 +1,7 @@
 // index.ts
-import express from "express";
-import type { Express, Request, Response } from "express";
+import type { Request, Response } from "express";
+import { app } from "./app.ts";
 
-const app: Express = express();
 const port = 5000;
 
 app.get("/", (_: Request, res: Response) => {

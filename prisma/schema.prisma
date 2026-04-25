@@ -12,18 +12,165 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-  posts Post[]
+//////////////////////
+// ENUMS
+//////////////////////
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
 }
 
-model Post {
-  id        Int     @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean @default(false)
-  author    User    @relation(fields: [authorId], references: [id])
-  authorId  Int
+//////////////////////
+// CORE USER SYSTEM
+//////////////////////
+
+model User {
+  id           Int      @id @default(autoincrement())
+  fullName     String
+  email        String   @unique
+  passwordHash String
+  isValid      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  // Relations
+  student Student?
+  staff   StaffMember?
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  email     String
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+model Role {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  staffMembers StaffMember[]
+}
+
+model StaffMember {
+  userId Int @id
+  roleId Int
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id])
+
+  markedAttendances Attendance[] @relation("MarkedBy")
+}
+
+model Student {
+  userId      Int    @id
+  studentCode String @unique
+  classId     Int
+
+  // Relations
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  class       Class        @relation(fields: [classId], references: [id])
+  attendances Attendance[]
+}
+
+//////////////////////
+// ACADEMIC STRUCTURE
+//////////////////////
+
+model Department {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+
+  classes Class[]
+}
+
+model Class {
+  id           Int     @id @default(autoincrement())
+  name         String
+  classCode    String  @unique
+  departmentId Int
+  year         Int
+  description  String?
+
+  // Relations
+  department Department    @relation(fields: [departmentId], references: [id])
+  students   Student[]
+  sessions   Session[]
+  modules    ClassModule[]
+}
+
+model Module {
+  id          Int     @id @default(autoincrement())
+  name        String
+  code        String  @unique
+  description String?
+
+  // Relations
+  classes  ClassModule[]
+  sessions Session[]
+}
+
+model ClassModule {
+  classId  Int
+  moduleId Int
+
+  // Relations
+  class  Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@id([classId, moduleId])
+}
+
+//////////////////////
+// SCHEDULING
+//////////////////////
+
+model Room {
+  id       Int       @id @default(autoincrement())
+  name     String
+  sessions Session[]
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  classId   Int
+  moduleId  Int
+  dayOfWeek Int
+  startTime DateTime @db.Time
+  endTime   DateTime @db.Time
+
+  // Relations
+  room       Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  class      Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  module     Module       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  attendance Attendance[]
+  roomId     Int
+}
+
+//////////////////////
+// ATTENDANCE
+//////////////////////
+
+model Attendance {
+  id        Int              @id @default(autoincrement())
+  studentId Int
+  sessionId Int
+  date      DateTime
+  status    AttendanceStatus
+  markedBy  Int?
+  createdAt DateTime         @default(now())
+
+  // Relations
+  student Student @relation(fields: [studentId], references: [userId], onDelete: Cascade)
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  marker StaffMember? @relation("MarkedBy", fields: [markedBy], references: [userId])
+
+  @@unique([studentId, sessionId, date])
 }
