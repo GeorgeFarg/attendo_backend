@@ -3,7 +3,7 @@ import { config } from "@/config/env.ts";
 import type { User } from "@/types/user.d.ts";
 
 export interface TokenPayload {
-  userId: number;
+  user: User;
   type: "access" | "refresh";
 }
 

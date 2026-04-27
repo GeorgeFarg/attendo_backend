@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { verifyAccessToken } from "@/lib/jwt.ts";
+import type { User } from "@/types/user.d.ts";
 
 declare global {
   namespace Express {
@@ -10,14 +11,18 @@ declare global {
 }
 
 export interface AuthenticatedRequest extends Request {
-  userId?: number;
+  user?: User;
 }
 
 /**
  * Middleware to verify JWT access token from Authorization header
  * Expected format: "Bearer <token>"
  */
-export function Authenticate(req: Request, res: Response, next: NextFunction) {
+export function Authenticate(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -35,6 +40,6 @@ export function Authenticate(req: Request, res: Response, next: NextFunction) {
     return;
   }
 
-  req.userId = payload.userId;
+  req.user = payload.user;
   next();
 }
