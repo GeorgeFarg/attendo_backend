@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-  registerController,
   verifyOtpController,
   loginController,
   refreshTokenController,
