@@ -37,16 +37,17 @@ model User {
   // Relations
   student Student?
   staff   StaffMember?
+
+  otpverifications OTPVerification?
 }
 
-model EmailVerification {
+model OTPVerification {
   id        String   @id @default(cuid())
-  email     String
   otp       String
   expiresAt DateTime
   createdAt DateTime @default(now())
-
-  @@index([email])
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Role {
