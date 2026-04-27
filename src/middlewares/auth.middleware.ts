@@ -9,15 +9,15 @@ declare global {
   }
 }
 
+export interface AuthenticatedRequest extends Request {
+  userId?: number;
+}
+
 /**
  * Middleware to verify JWT access token from Authorization header
  * Expected format: "Bearer <token>"
  */
-export function authMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) {
+export function Authenticate(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {

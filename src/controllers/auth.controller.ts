@@ -13,6 +13,7 @@ import {
 import { prisma } from "@/lib/prisma.ts";
 import { verifyRefreshToken, generateAccessToken } from "@/lib/jwt.ts";
 import bcrypt from "bcrypt";
+import type { User } from "@/types/user.d.ts";
 
 // POST /auth/forgot-password — send OTP to email for password reset
 const forgotPasswordController = async (
@@ -91,7 +92,7 @@ const loginController = async (
       return;
     }
 
-    const session = await createUserSession(user.id, remember);
+    const session = await createUserSession(user, remember);
     res.status(200).json({
       accessToken: session.accessToken,
       refreshToken: session.refreshToken,
@@ -122,7 +123,11 @@ const refreshTokenController = async (
       return;
     }
 
-    const newAccessToken = generateAccessToken(payload.userId);
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+    });
+
+    const newAccessToken = generateAccessToken(user as User);
     res.status(200).json({ accessToken: newAccessToken });
   } catch (err) {
     next(err);

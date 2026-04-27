@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { config } from "@/config/env.ts";
+import type { User } from "@/types/user.d.ts";
 
 export interface TokenPayload {
   userId: number;
@@ -9,8 +10,8 @@ export interface TokenPayload {
 /**
  * Generate an access token
  */
-export function generateAccessToken(userId: number): string {
-  return jwt.sign({ userId, type: "access" }, config.JWT_SECRET, {
+export function generateAccessToken(user: User): string {
+  return jwt.sign({ user, type: "access" }, config.JWT_SECRET, {
     expiresIn: "15m",
   });
 }
