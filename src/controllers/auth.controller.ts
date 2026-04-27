@@ -4,32 +4,10 @@ import {
   registerSchema,
   verifyOtpSchema,
 } from "@/validators/auth.schema.ts";
-import {
-  registerUser,
-  createUserSession,
-  loginUser,
-} from "@/services/auth.service.ts";
+import { createUserSession, loginUser } from "@/services/auth.service.ts";
 import { sendVerificationOtp, verifyOtp } from "@/services/otp.service.ts";
 import { prisma } from "@/lib/prisma.ts";
 import { verifyRefreshToken, generateAccessToken } from "@/lib/jwt.ts";
-
-// POST /auth/register — create user and send OTP
-const registerController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const data = registerSchema.parse(req.body);
-    const user = await registerUser(data);
-    await sendVerificationOtp(user.email);
-    res
-      .status(201)
-      .json({ message: "OTP sent to your email. Please verify to continue." });
-  } catch (err) {
-    next(err);
-  }
-};
 
 // POST /auth/verify-otp — verify OTP and create session
 const verifyOtpController = async (
@@ -127,9 +105,4 @@ const refreshTokenController = async (
   }
 };
 
-export {
-  registerController,
-  verifyOtpController,
-  loginController,
-  refreshTokenController,
-};
+export { verifyOtpController, loginController, refreshTokenController };

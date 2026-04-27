@@ -8,7 +8,6 @@ import {
 
 const router = Router();
 
-router.post("/register", registerController);
 router.post("/verify-otp", verifyOtpController);
 router.post("/login", loginController);
 router.post("/refresh", refreshTokenController);

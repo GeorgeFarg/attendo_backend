@@ -3,25 +3,6 @@ import { generateAccessToken, generateRefreshToken } from "@/lib/jwt.ts";
 import type { RegisterInput } from "@/validators/auth.schema.ts";
 import bcrypt from "bcrypt";
 
-export async function registerUser(data: RegisterInput) {
-  const existing = await prisma.user.findUnique({
-    where: { email: data.email },
-  });
-  if (existing) throw new Error("Email already in use");
-
-  const hashedPassword = await bcrypt.hash(data.password, 10);
-
-  const user = await prisma.user.create({
-    data: {
-      email: data.email,
-      fullName: data.name,
-      passwordHash: hashedPassword,
-    },
-  });
-
-  return user;
-}
-
 export async function createUserSession(
   userId: number,
   remember: boolean = false,
