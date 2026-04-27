@@ -2,50 +2,81 @@ import type { NextFunction, Request, Response } from "express";
 import {
   loginSchema,
   registerSchema,
-  verifyOtpSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from "@/validators/auth.schema.ts";
 import { createUserSession, loginUser } from "@/services/auth.service.ts";
-import { sendVerificationOtp, verifyOtp } from "@/services/otp.service.ts";
+import {
+  sendPasswordResetOtp,
+  verifyPasswordResetOtp,
+} from "@/services/otp.service.ts";
 import { prisma } from "@/lib/prisma.ts";
 import { verifyRefreshToken, generateAccessToken } from "@/lib/jwt.ts";
+import bcrypt from "bcrypt";
 
-// POST /auth/verify-otp — verify OTP and create session
-const verifyOtpController = async (
+// POST /auth/forgot-password — send OTP to email for password reset
+const forgotPasswordController = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const { email, otp } = verifyOtpSchema.parse(req.body);
-    const valid = await verifyOtp(email, otp);
-
-    if (!valid) {
-      res.status(400).json({ message: "Invalid or expired OTP" });
-      return;
-    }
-
-    const user = await prisma.user.update({
+    const { email } = forgotPasswordSchema.parse(req.body);
+    const user = await prisma.user.findUnique({
       where: { email },
-      data: {
-        isValid: true,
-      },
     });
+
     if (!user) {
       res.status(404).json({ message: "User not found" });
       return;
     }
 
-    const session = await createUserSession(user.id);
+    await sendPasswordResetOtp(user.id, user.email);
     res.status(200).json({
-      accessToken: session.accessToken,
-      refreshToken: session.refreshToken,
+      message: "OTP sent to your email for password reset",
     });
   } catch (err) {
     next(err);
   }
 };
 
-// POST /auth/login — verify Login and create session
+// POST /auth/reset-password — verify OTP and reset password
+const resetPasswordController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { email, otp, newPassword } = resetPasswordSchema.parse(req.body);
+    const valid = await verifyPasswordResetOtp(email, otp);
+
+    if (!valid) {
+      res.status(400).json({ message: "Invalid or expired OTP" });
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const user = await prisma.user.update({
+      where: { email },
+      data: {
+        passwordHash: hashedPassword,
+      },
+    });
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "Password reset successfully",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// POST /auth/login — verify login credentials and create session
 const loginController = async (
   req: Request,
   res: Response,
@@ -56,22 +87,15 @@ const loginController = async (
     const user = await loginUser(email, password);
 
     if (!user) {
-      res.status(400).json({ message: "invalid input" });
+      res.status(400).json({ message: "Invalid email or password" });
       return;
     }
 
-    if (!user.isValid) {
-      await sendVerificationOtp(user.email);
-      res.status(403).json({
-        message: "Email not verified. A new OTP has been sent to your email.",
-      });
-    } else {
-      const session = await createUserSession(user.id, remember);
-      res.status(200).json({
-        accessToken: session.accessToken,
-        refreshToken: session.refreshToken,
-      });
-    }
+    const session = await createUserSession(user.id, remember);
+    res.status(200).json({
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
+    });
   } catch (err) {
     next(err);
   }
@@ -105,4 +129,9 @@ const refreshTokenController = async (
   }
 };
 
-export { verifyOtpController, loginController, refreshTokenController };
+export {
+  forgotPasswordController,
+  resetPasswordController,
+  loginController,
+  refreshTokenController,
+};

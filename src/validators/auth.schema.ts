@@ -1,22 +1,36 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const registerSchema = z.object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
-    email: z.string().email('Invalid email format'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 export const loginSchema = z.object({
-    email: z.string().email('Invalid email format'),
-    password: z.string().min(1, 'Password is required'),
-    remember: z.boolean().default(false),
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(1, "Password is required"),
+  remember: z.boolean().default(false),
 });
 
-export const verifyOtpSchema = z.object({
-    email: z.string().email(),
-    otp: z.string().length(6),
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email format"),
+});
+
+export const verifyPasswordResetOtpSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  otp: z.string().length(6),
+});
+
+export const resetPasswordSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  otp: z.string().length(6),
+  newPassword: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
-export type VerifyOtpInput = z.infer<typeof verifyOtpSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type VerifyPasswordResetOtpInput = z.infer<
+  typeof verifyPasswordResetOtpSchema
+>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
