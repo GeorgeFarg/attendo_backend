@@ -124,7 +124,7 @@ const refreshTokenController = async (
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: payload.user.id },
+      where: { id: payload.userId },
     });
 
     const newAccessToken = generateAccessToken(user as User);

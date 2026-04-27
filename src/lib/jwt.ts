@@ -7,6 +7,11 @@ export interface TokenPayload {
   type: "access" | "refresh";
 }
 
+export interface RefreshTokenPayload {
+  userId: number;
+  type: "access" | "refresh";
+}
+
 /**
  * Generate an access token
  */
@@ -41,12 +46,12 @@ export function verifyAccessToken(token: string): TokenPayload | null {
 /**
  * Verify a refresh token and return the payload
  */
-export function verifyRefreshToken(token: string): TokenPayload | null {
+export function verifyRefreshToken(token: string): RefreshTokenPayload | null {
   try {
     const decoded = jwt.verify(
       token,
       config.JWT_REFRESH_SECRET,
-    ) as TokenPayload;
+    ) as RefreshTokenPayload;
     if (decoded.type !== "refresh") return null;
     return decoded;
   } catch {
