@@ -37,3 +37,39 @@ export async function isManager(
 
   next();
 }
+
+export async function isStaff(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+) {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    res
+      .status(401)
+      .json({ message: "Missing or invalid authorization header" });
+    return;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    include: {
+      staff: true,
+    },
+  });
+
+  if (!user) {
+    res.status(404).json({ message: "User not found" });
+    return;
+  }
+
+  if (!user.staff) {
+    res.status(403).json({ message: "Unauthorized" });
+    return;
+  }
+
+  next();
+}
