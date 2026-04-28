@@ -22,6 +22,12 @@ enum AttendanceStatus {
   LATE
 }
 
+enum Role {
+  PROFESSOR
+  MANAGER
+  ASSISTANT
+}
+
 //////////////////////
 // CORE USER SYSTEM
 //////////////////////
@@ -50,21 +56,13 @@ model OTPVerification {
   user      User     @relation(fields: [userId], references: [id])
 }
 
-model Role {
-  id   Int    @id @default(autoincrement())
-  name String @unique
-
-  staffMembers StaffMember[]
-}
-
 model StaffMember {
   userId Int @id
-  roleId Int
+  // roleId Int
 
   // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role Role @relation(fields: [roleId], references: [id])
-
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role              Role
   markedAttendances Attendance[] @relation("MarkedBy")
 }
 

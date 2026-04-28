@@ -24,3 +24,13 @@ export async function sendOtpEmail(to: string, otp: string) {
     html: `<p>Your OTP is: <strong>${otp}</strong>. It expires in 10 minutes.</p>`,
   });
 }
+
+export async function sendPasswordEmail(to: string, password: string) {
+  await transporter.sendMail({
+    from: `"Attendo:" <${config.SMTP_USER}>`,
+    to,
+    subject: "Your user password",
+    text: `Your password is: ${password}. It expires in 10 minutes.`,
+    html: `<p>Your password is: <strong>${password}</strong></p>`,
+  });
+}

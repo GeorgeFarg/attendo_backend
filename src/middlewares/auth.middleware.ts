@@ -2,13 +2,13 @@ import type { NextFunction, Request, Response } from "express";
 import { verifyAccessToken } from "@/lib/jwt.ts";
 import type { User } from "@/types/user.d.ts";
 
-declare global {
-  namespace Express {
-    interface Request {
-      userId?: number;
-    }
-  }
-}
+// declare global {
+//   namespace Express {
+//     interface Request {
+//       userId?: number;
+//     }
+//   }
+// }
 
 export interface AuthenticatedRequest extends Request {
   user?: User;

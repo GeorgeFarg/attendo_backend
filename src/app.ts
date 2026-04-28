@@ -2,6 +2,8 @@
 import express from "express";
 import type { Express, Request, Response } from "express";
 import AuthRouter from "@/routes/auth.routes.ts";
+import UserRouter from "@/routes/user.routes.ts";
+import { Authenticate } from "./middlewares/auth.middleware.ts";
 const app: Express = express();
 
 app.use(express.json());
@@ -53,5 +55,6 @@ app.use((req: Request, res: Response, next) => {
 });
 
 app.use("/api/auth", AuthRouter);
-
+app.use(Authenticate);
+app.use("/api/user", UserRouter);
 export { app };
